@@ -47,15 +47,15 @@ def openFile(window, textEdit):
 
     if not filepath:
         return
-    
-    textEdit.delete(1.0,tk.END)
-    with open(filepath, "r") as f:
-        content = f.read()
-        textEdit.insert(tk.END, content)
-    window.title(f"Open File: {os.path.basename(filepath)}")
-    currentFilename = os.path.basename(filepath)
-    
-
+    try:
+        textEdit.delete(1.0,tk.END)
+        with open(filepath, "r") as f:
+            content = f.read()
+            textEdit.insert(tk.END, content)
+        window.title(f"Open File: {os.path.basename(filepath)}")
+        currentFilename = os.path.basename(filepath)
+    except Exception as e:
+        print(f"Error open file {e}")
 
 def saveAsFile(window, textEdit):
     global currentFilename
@@ -69,16 +69,22 @@ def saveAsFile(window, textEdit):
     if not filepath:
         return
     
-    with open(filepath, "w") as f:
-        content = textEdit.get(1.0,tk.END)
-        f.write(content)
-    window.title(f"Saved File: {os.path.basename(filepath)}")
-    currentFilename = os.path.basename(filepath)
+    try:
+        with open(filepath, "w") as f:              #Takes up the pen
+            content = textEdit.get(1.0,tk.END)      #Copy everything from the pencil
+            f.write(content)                        #write everything permanently with the pen (Save)
+
+        window.title(f"Saved File: {os.path.basename(filepath)}")
+        currentFilename = os.path.basename(filepath)
+
+    except Exception as e:
+        print(f"Error saving file {e}")
+
 
 def saveFile(window, textEdit):
-    global currentFilename
-    if not currentFilename:
-        saveAsFile(window, textEdit)
+    global currentFilename                      #See whether currentFilename is "None" or not
+    if not currentFilename:                     #If not
+        saveAsFile(window, textEdit)            #Use the saveAsFile function
     else:
         try:
             with open(currentFilename, "w") as f:
