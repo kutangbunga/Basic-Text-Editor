@@ -1,5 +1,8 @@
 import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+import os
+
+currentFilename = None
 
 def main():
     window = tk.Tk()
@@ -24,20 +27,22 @@ def main():
     menuButton = tk.Menubutton(toolbar, text="File", relief=tk.RAISED)
     menu=tk.Menu(menuButton, tearoff=False)
     menu.add_command(label="Open", command=lambda:openFile(window, textEdit))
-    menu.add_command(label="Save")
-    menu.add_command(label="Save as", command=lambda:saveFile(window, textEdit))
+    menu.add_command(label="Save", command=lambda:saveFile(window, textEdit))
+    menu.add_command(label="Save as", command=lambda:saveAsFile(window, textEdit))
     
     menuButton["menu"] = menu
     menuButton.grid(row=0, column=0, pady=5, padx=5, sticky="ns")
 
     #Key binding
-    window.bind("<Control-s>", lambda x: saveFile(window, textEdit))
     window.bind("<Control-o>", lambda x: openFile(window, textEdit))
+    window.bind("<Control-s>", lambda x: saveFile(window, textEdit))
+    window.bind("<Control-Shift-S>", lambda x: saveAsFile(window, textEdit))
 
     window.mainloop()
 
 
 def openFile(window, textEdit):
+    global currentFilename
     filepath = askopenfilename(filetypes=[("Text Files", "*.txt")])
 
     if not filepath:
@@ -47,11 +52,19 @@ def openFile(window, textEdit):
     with open(filepath, "r") as f:
         content = f.read()
         textEdit.insert(tk.END, content)
-    window.title(f"Open File:{filepath}")
+    window.title(f"Open File: {os.path.basename(filepath)}")
+    currentFilename = os.path.basename(filepath)
+    
 
 
-def saveFile(window, textEdit):
-    filepath = asksaveasfilename(filetypes=[("Text Files", "*.txt")])
+def saveAsFile(window, textEdit):
+    global currentFilename
+    filepath = asksaveasfilename(
+        defaultextension=".txt",
+        filetypes=[("Text Files", "*.txt"),("All files","*.*")],
+        initialfile="untitled.txt",
+        title="Save your file as..."
+        )
 
     if not filepath:
         return
@@ -59,7 +72,20 @@ def saveFile(window, textEdit):
     with open(filepath, "w") as f:
         content = textEdit.get(1.0,tk.END)
         f.write(content)
-    window.title(f"Open File:{filepath}")
+    window.title(f"Saved File: {os.path.basename(filepath)}")
+    currentFilename = os.path.basename(filepath)
 
+def saveFile(window, textEdit):
+    global currentFilename
+    if not currentFilename:
+        saveAsFile(window, textEdit)
+    else:
+        try:
+            with open(currentFilename, "w") as f:
+                content= textEdit.get(1.0, tk.END)
+                f.write(content)
+                window.title(f"Saved file: {currentFilename}")
+        except Exception as e:
+            print(f"Error saving file {e}")
 
 main()
