@@ -4,20 +4,33 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 def main():
     window = tk.Tk()
     window.title("Text Editor")
-    window.rowconfigure(1,minsize=400)
-    window.columnconfigure(0,minsize=500)
+    window.rowconfigure(1,minsize=400, weight=3)
+    window.columnconfigure(0,minsize=500, weight=3)
     
+    #Toolbar
+    toolbar = tk.Frame(window, relief=tk.RAISED, bd=2)
+    toolbar.grid(row=0, column=0, sticky="ew")
+
+    #Text Editor
     textEdit = tk.Text(window, font="Helvetica 12")
     textEdit.grid(row=1, column=0, sticky="nsew")
 
-    toolbar = tk.Frame(window, relief=tk.RAISED, bd=2)
-    saveButton = tk.Button(toolbar, text = "Save", command = lambda: saveFile(window, textEdit))
-    openButton = tk.Button(toolbar, text = "Open", command = lambda: openFile(window, textEdit))
+    #Scrollbar
+    scrollBar=tk.Scrollbar(window)
+    scrollBar.config(command=textEdit.yview)
+    scrollBar.grid(row=1, column=4, sticky="nsew")
 
-    openButton.grid(row = 0, column = 0, pady=5, sticky="ns")
-    saveButton.grid(row = 0, column = 1, pady=5, padx=5, sticky="ns")
-    toolbar.grid(row=0, column=0, sticky="ew")
+    #Menu button
+    menuButton = tk.Menubutton(toolbar, text="File", relief=tk.RAISED)
+    menu=tk.Menu(menuButton, tearoff=False)
+    menu.add_command(label="Open", command=lambda:openFile(window, textEdit))
+    menu.add_command(label="Save")
+    menu.add_command(label="Save as", command=lambda:saveFile(window, textEdit))
+    
+    menuButton["menu"] = menu
+    menuButton.grid(row=0, column=0, pady=5, padx=5, sticky="ns")
 
+    #Key binding
     window.bind("<Control-s>", lambda x: saveFile(window, textEdit))
     window.bind("<Control-o>", lambda x: openFile(window, textEdit))
 
